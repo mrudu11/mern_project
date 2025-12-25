@@ -66,4 +66,16 @@ router.get("/getCourseStudent", (req, res) => {
         res.send(result.createResult(error, data))
     })
 })
+
+// get all registered courses with valid videos
+router.get("/getvideos/:name", (req, res) => {
+    const name = req.params.name;
+    const sql = `select c.course_name, v.youtube_url,s.name from courses c 
+    inner join student s on c.course_id=s.course_id inner join videos v on v.course_id= c.course_id 
+    where s.name= ? AND c.end_date >=current_date`
+
+    pool.query(sql, [name], (error, data) => {
+        res.send(result.createResult(error, data));
+    });
+});
 module.exports = router
