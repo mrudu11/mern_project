@@ -5,17 +5,88 @@ const router = express.Router();
 //importing the pool
 const pool = require("../db/pool");
 const result = require("../utils/result");
+const { authUser, checkAuthorization } = require("../utils/auth");
+
 //GET Method
 
-router.get("/", (req, res) => {
+router.get("/", checkAuthorization, (req, res) => {
   const sql = "select * from videos";
   pool.query(sql, (error, data) => {
     res.send(result.createResult(error, data));
   });
 });
 
+// GET all videos OR filter by course_id
+router.get("/videos-with-course", authUser, checkAuthorization, (req, res) => {
+  const course_id = Number(req.query.course_id);
+
+  console.log("✅ video route hit, course_id =", course_id);
+
+  let sql = `
+    SELECT 
+      v.video_id,
+      v.course_id,
+      c.course_name,
+      v.title,
+      v.description,
+      v.youtube_url,
+      v.added_at
+    FROM videos v
+    JOIN courses c ON v.course_id = c.course_id
+  `;
+
+  let params = [];
+
+  if (!isNaN(course_id)) {
+    sql += " WHERE v.course_id = ?";
+    params.push(course_id);
+  }
+
+  pool.query(sql, params, (error, data) => {
+    if (error) {
+      console.log("❌ SQL ERROR:", error);
+    }
+    res.send(result.createResult(error, data));
+  });
+});
+
+// GET all videos OR videos by course
+router.get(
+  "/videos-with-course-name",
+  authUser,
+  checkAuthorization,
+  (req, res) => {
+    const { course_id } = req.query;
+
+    let sql = `
+      SELECT 
+        v.video_id,
+        v.course_id,
+        c.course_name,
+        v.title,
+        v.description,
+        v.youtube_url,
+        v.added_at
+      FROM videos v
+      JOIN courses c ON v.course_id = c.course_id
+    `;
+
+    let params = [];
+
+    // ✅ FILTER ONLY IF course_id IS SENT
+    if (course_id) {
+      sql += " WHERE v.course_id = ?";
+      params.push(course_id);
+    }
+
+    pool.query(sql, params, (error, data) => {
+      res.send(result.createResult(error, data));
+    });
+  }
+);
+
 //POST Method
-router.post("/", (req, res) => {
+router.post("/", authUser, checkAuthorization, (req, res) => {
   //Destructuring
 
   const { course_id, title, description, youtube_url, added_at } = req.body;
@@ -31,7 +102,9 @@ router.post("/", (req, res) => {
   );
 });
 
-router.put("/:video_id", (req, res) => {
+//PUT Method
+
+router.put("/:video_id", authUser, checkAuthorization, (req, res) => {
   const video_id = req.params.video_id;
 
   const { course_id, title, description, youtube_url, added_at } = req.body;
@@ -56,7 +129,7 @@ router.put("/:video_id", (req, res) => {
 });
 
 // DELETE Method (Delete by video_id)
-router.delete("/:video_id", (req, res) => {
+router.delete("/:video_id", authUser, checkAuthorization, (req, res) => {
   const video_id = req.params.video_id; // Get ID from URL
 
   const sql = "DELETE FROM videos WHERE video_id = ?";
@@ -66,92 +139,53 @@ router.delete("/:video_id", (req, res) => {
   });
 });
 
-/*
-  GET students by course id
-  URL: /students/:courseId
-  Example: /students/1
-*/
-router.get("/:courseId", (req, res) => {
-  const courseId = req.params.courseId;
+// GET videos for logged-in student's registered course
 
-  if (!courseId) {
-    return res.send(result.createResult("courseId is required"));
-  }
+router.get(
+  "/my-course-videos/:course_id",
+  authUser,
+  checkAuthorization,
+  (req, res) => {
+    const course_id = Number(req.params.course_id);
+    const studentEmail = req.user.email; // 🔥 from JWT
 
-  const sql = `
-    SELECT reg_no, name, email, course_id, mobile_no, profile_pic
-    FROM students
-    WHERE course_id = ?
+    const sql = `
+    SELECT 
+      v.video_id,
+      v.title,
+      v.description,
+      v.youtube_url,
+      v.added_at,
+      c.course_name
+    FROM students sr
+    JOIN courses c ON sr.course_id = c.course_id
+    JOIN videos v ON c.course_id = v.course_id
+    WHERE sr.email = ?
+      AND sr.course_id = ?
+    ORDER BY v.added_at DESC
   `;
 
-  pool.query(sql, [courseId], (error, data) => {
+    pool.query(sql, [studentEmail, course_id], (error, data) => {
+      if (error) {
+        console.log("SQL ERROR:", error);
+        return res.send(result.createResult(error));
+      }
+      res.send(result.createResult(null, data));
+    });
+  }
+);
+
+// GET only active (non-expired) courses
+router.get("/courses-active", authUser, checkAuthorization, (req, res) => {
+  const sql = `
+    SELECT course_id, course_name
+    FROM courses
+    WHERE CURDATE() BETWEEN start_date AND end_date
+  `;
+
+  pool.query(sql, (error, data) => {
     res.send(result.createResult(error, data));
   });
 });
-
-/*
-  GET all videos by course id (path param)
-  URL: /video/all-videos/:courseId
-  Example: /video/all-videos/1
-*/
-router.get("/all-videos/:courseId", (req, res) => {
-  const courseId = req.params.courseId;
-
-  if (!courseId) {
-    return res.send(result.createResult("courseId is required"));
-  }
-
-  const sql = `
-    SELECT video_id, course_id, title, description, youtube_url, added_at
-    FROM videos
-    WHERE course_id = ?
-  `;
-
-  pool.query(sql, [courseId], (error, data) => {
-    res.send(result.createResult(error, data));
-  });
-});
-
-// // GET students by course id
-// // /students/by-course?courseId=1
-// router.get("/by-course", (req, res) => {
-//   const { courseId } = req.query;
-
-//   if (!courseId) {
-//     return res.send(result.createResult("courseId is required"));
-//   }
-
-//   const sql = `
-//     SELECT reg_no, name, email, course_id, mobile_no, profile_pic
-//     FROM students
-//     WHERE course_id = ?
-//   `;
-
-//   pool.query(sql, [courseId], (error, data) => {
-//     res.send(result.createResult(error, data));
-//   });
-// });
-
-/*
-  GET all videos by course id
-  URL: /video/all-videos?courseId=1
-*/
-// router.get("/all-videos", (req, res) => {
-//   const { courseId } = req.query;
-
-//   if (!courseId) {
-//     return res.send(result.createResult("courseId is required"));
-//   }
-
-//   const sql = `
-//     SELECT video_id, course_id, title, description, youtube_url, added_at
-//     FROM videos
-//     WHERE course_id = ?
-//   `;
-
-//   pool.query(sql, [courseId], (error, data) => {
-//     res.send(result.createResult(error, data));
-//   });
-// });
 
 module.exports = router;
