@@ -41,3 +41,36 @@ export async function changePassword(newPassword) {
 
   return response.data;
 }
+
+//reg to courses
+export async function Regcourses(courseId, email, name, mobile, token) {
+  const URL = "http://localhost:5000/student/registerCourse";
+
+  const body = {
+    courseId,
+    email,
+    name,
+    mobile,
+  };
+
+  const response = await axios.post(URL, body, {
+    headers: {
+      Authorization: `Bearer ${token}`,   
+    },
+  });
+
+  return response.data;
+}
+
+//my reg courses
+export async function MyCourses(token) {
+  const URL = "http://localhost:5000/student/getCourseStudent";
+
+  const response = await axios.get(URL, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return response.data;
+}

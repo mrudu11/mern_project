@@ -5,6 +5,16 @@ import { useLocation } from "react-router";
 export default function ViewCourseDetails(){
    const location = useLocation()
    const course = location.state.course
+   const navigate = useNavigate();
+   const Register = (course) => {
+  navigate("/registerToCourse", {
+    state: {
+      courseId: course.course_id,
+      course_name: course.course_name,     //changes
+      fees: course.fees
+    },
+  });
+  };
    
     // const [courses,setCourses] = useState([])
     //         const Register = async (cid)=>{
@@ -28,7 +38,7 @@ export default function ViewCourseDetails(){
             <p className="card-text"><strong>Start Date:</strong> {course.start_date}</p>
             <p className="card-text"><strong>End Date:</strong> {course.end_date}</p>
             <p className="card-text"><strong>Fees:</strong> ₹{course.fees}</p>
-            <a href="#" className="btn btn-success" onClick={()=>{Register(course.course_id)}}>Register to Course</a>
+            <a href="#" className="btn btn-success" onClick={()=>{Register(course)}}>Register to Course</a>
           </div>
         </div>
   

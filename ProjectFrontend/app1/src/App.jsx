@@ -15,6 +15,9 @@ import AdminRoute from "./guards/AdminRoutes";
 import ChangePassword from "./pages/ChangePassword";
 import UpdateProfile from "./pages/UpdateProfile";
 import GetAllStudents from "./pages/GetAllStudent";
+import UpdateCourse from "./pages/UpdateCourse";
+import RegisterToCourses from "./pages/RegisterToCorses";
+import MyRegCourse from "./pages/MyregCourses";
 
 
 export const loginContext = createContext();
@@ -55,6 +58,10 @@ function App() {
               </AdminRoute>
             }
           />
+
+          <Route path="updateCourse" element= {<UpdateCourse/>}/>
+          <Route path ="regToCourse" element = {<RegisterToCourses/>}/>
+          <Route path ="myCourse" element ={<MyRegCourse/>}/>
         </Routes>
       </loginContext.Provider>
     </>
