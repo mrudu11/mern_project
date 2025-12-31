@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import Navbar from "../component/Navbar"
 import { getAllCourses } from "../services/studentServices"
 import { useNavigate } from "react-router"
+import NavbarAdmin from "../component/NavbarAdmin"
 
 export default function Home(){
     const [courses,getCourses] = useState([])
@@ -26,6 +27,7 @@ export default function Home(){
       // }
     return <>
     <Navbar/>
+    <NavbarAdmin />
     <div className="container">
   <h2>All Available courses</h2>
   {/* <p>The .table-striped class adds zebra-stripes to a table:</p>             */}

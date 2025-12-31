@@ -12,6 +12,10 @@ import { createContext } from "react";
 import ViewCourseDetails from "./pages/ViewCourseDetails";
 import AllVideos from "./pages/AllVideo";
 import AdminRoute from "./guards/AdminRoutes";
+import ChangePassword from "./pages/ChangePassword";
+import UpdateProfile from "./pages/UpdateProfile";
+import GetAllStudents from "./pages/GetAllStudent";
+
 
 export const loginContext = createContext();
 function App() {
@@ -38,6 +42,10 @@ function App() {
             path="/view"
             element={loginStatus ? <ViewCourseDetails /> : <Navigate to="/" />}
           />
+          <Route path="/changepassword" element={<ChangePassword />}/>
+          <Route path="/updateprofile" element={<UpdateProfile />}/>
+          <Route path="/getallstudent" element={<GetAllStudents />}/>
+
           {/* <Route path="/admin/videos" element={<AllVideos />} /> */}
           <Route
             path="/admin/videos"

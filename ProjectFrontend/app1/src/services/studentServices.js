@@ -24,3 +24,20 @@ export async function getAllCourses(token){
     return response.data
 }
 
+//change password
+
+export async function changePassword(newPassword) {
+  const token = sessionStorage.getItem("token");
+
+  const response = await axios.put(
+    "http://localhost:5000/students/changePassword",
+    { password: newPassword },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return response.data;
+}

@@ -66,4 +66,35 @@ router.get("/getCourseStudent", (req, res) => {
         res.send(result.createResult(error, data))
     })
 })
+// GET ALL STUDENTS
+router.get("/", (req, res) => {
+  const sql = `
+    SELECT s.reg_no, s.name, s.email, s.mobile_no, c.course_name
+    FROM students s
+    JOIN courses c ON s.course_id = c.course_id
+  `;
+
+  db.query(sql, (err, result) => {
+    if (err) return res.status(500).json({ status: "error" });
+    res.json({ status: "success", data: result });
+  });
+});
+
+// GET STUDENTS BY COURSE NAME
+router.get("/by-course/:courseName", (req, res) => {
+  const { courseName } = req.params;
+
+  const sql = `
+    SELECT s.reg_no, s.name, s.email, s.mobile_no, c.course_name
+    FROM students s
+    JOIN courses c ON s.course_id = c.course_id
+    WHERE c.course_name = ?
+  `;
+
+  db.query(sql, [courseName], (err, result) => {
+    if (err) return res.status(500).json({ status: "error" });
+    res.json({ status: "success", data: result });
+  });
+});
+
 module.exports = router

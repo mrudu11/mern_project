@@ -27,7 +27,7 @@ function authUser(req,res,next){
 
 function checkAuthorization(req,res,next){
     const role = req.headers.role
-    if(role == "admin"){
+    if(role == "ADMIN"){
         return next();
     }
     res.send(result.createResult("unauthorized access"));
