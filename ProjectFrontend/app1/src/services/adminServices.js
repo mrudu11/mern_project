@@ -77,3 +77,12 @@ export const getStudentsByCourseName = async (courseName, token) => {
   );
   return res.data;
 };
+
+
+//update course 
+export async function updateCourse(course_name,description,fees,start_date,end_date,video_expire_days,token){
+    const URL = `http://localhost:5000/course/update/5`
+    const body ={course_name,description,fees,start_date,end_date,video_expire_days}
+    const response = await axios.put(URL,body,{headers :{token}})
+    return response.data
+}

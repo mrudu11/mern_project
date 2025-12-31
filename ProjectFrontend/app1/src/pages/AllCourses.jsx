@@ -4,6 +4,23 @@ import { useState,useEffect } from "react";
 import { toast } from "react-toastify";
 import { delCourse } from "../services/adminServices";
 export default function AllCourses(){
+
+  const location = useLocation()
+   const course = location.state.course
+   const navigate = useNavigate();
+   const update = (course) => {
+  navigate("/UpdateCourse", {
+    state: {
+      courseId: course.course_id,
+      course_name: course.course_name,     //changes
+      description : course.description,
+      fees: course.fees,
+      start_date :course.start_date,
+      end_date : course.end_date,
+      video_expire_days: course.video_expire_days
+    },
+  });
+}
     const [courses,getCourses] = useState([])
         const getCourse = async ()=>{
             const token = sessionStorage.getItem('token')
@@ -58,7 +75,7 @@ export default function AllCourses(){
                 <td>{course.end_date}</td>
                 <td>{course.video_expire_days}</td>
                 <td className="text-center">
-                  <button className="btn btn-warning action-btn me-1 d-inline-flex" >
+                  <button className="btn btn-warning action-btn me-1 d-inline-flex" onclick={() =>update()} >
                     <i className="bi bi-pencil"></i>
                   </button>
 
